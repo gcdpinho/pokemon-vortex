@@ -5,12 +5,15 @@ from selenium.webdriver.support import expected_conditions as EC
 import getpass
 import sys
 import random
+import time
 
 class User():
 
     def __init__(self, driver, url):
-        self.username = input("Usuário: ")
-        self.password = getpass.getpass("Senha: ")
+        #self.username = input("Usuário: ")
+        #self.password = getpass.getpass("Senha: ")
+        self.username = "gcdpinho"
+        self.password = "gustavo4878286"
         self.driver = driver
         self.url = url
         
@@ -33,6 +36,7 @@ class User():
 def training():
     url = "https://www.pokemon-vortex.com/"
     driver = webdriver.PhantomJS()
+    driver.implicitly_wait(5)
     leaders = [("BUG","415355"), ("DARK", "840815"), ("DRAGON", "415125"), ("FIRE", "19935"), ("FIRE", "381236"),
                 ("FLYING", "42587"), ("FLYING", "415267"), ("FLYING", "404027"), ("GHOST", "101386"), ("ELETRIC", "381236"),
                 ("ELETRIC", "301042"), ("FAIRY", "414997"), ("FAIRY", "413288"), ("FIGHINT", "544881"), ("FIGHINT", "889435"),
@@ -48,6 +52,7 @@ def training():
 
     ###### TRAINING ######
     url = driver.current_url.replace("dashboard/", "")
+    repeat = False
     while True:
         natureLeaders = []
         nature = input("Tipo do Pókemon: ").upper()
@@ -58,18 +63,32 @@ def training():
         for leader in leaders:
             if leader[0] == nature:
                 natureLeaders.append(leader)
-        
-        choice = random.randint(0, len(natureLeaders)-1)
-        url += "battle-user/" + natureLeaders[choice][-1]
-        driver.get(url)
 
-        nextPage = driver.find_elements_by_class_name("button-small")
-        for element in nextPage:
-            if "Continue" in element.get_attribute("value"):
-                element.click()
-                print("Battle start!")
-                break
+        if len(natureLeaders) == 0:
+            print("Opção Inválida! Tente novamente.")
+            continue
+        # escolhe randomicamente um trainer do tipo escolhido
+        choice = random.randint(0, len(natureLeaders)-1)
+        driver.get(url + "battle-user/" + natureLeaders[choice][-1])
+        # start Battle
+        flag = True
+        while flag:
+            flag = False
+            
+            nextPage = driver.find_elements_by_class_name("button-small")
+            for element in nextPage:
+                if "select_attack" in element.get_attribute("value") or "attack" in element.get_attribute("value") or "pokechu" in element.get_attribute("value"):
+                    print (element.get_attribute('value'))
+                    element.submit()
+                    time.sleep(5)
+                    flag = True
+                    break
+        # show rewards
         
+        #rewards = driver.find_element_by_id("ajax").find_elements_by_tag_name('p')
+        for reward in rewards:
+            print(reward.get_attribute('innerHTML'))
+
 
 
 
