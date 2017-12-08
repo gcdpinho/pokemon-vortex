@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import getpass
 import sys
+import random
 
 class User():
 
@@ -48,10 +49,27 @@ def training():
     ###### TRAINING ######
     url = driver.current_url.replace("dashboard/", "")
     while True:
+        natureLeaders = []
         nature = input("Tipo do Pókemon: ").upper()
         
         if nature == "EXIT":
             sys.exit(0)
+        
+        for leader in leaders:
+            if leader[0] == nature:
+                natureLeaders.append(leader)
+        
+        choice = random.randint(0, len(natureLeaders)-1)
+        url += "battle-user/" + natureLeaders[choice][-1]
+        driver.get(url)
+
+        nextPage = driver.find_elements_by_class_name("button-small")
+        for element in nextPage:
+            if "Continue" in element.get_attribute("value"):
+                element.click()
+                print("Battle start!")
+                break
+        
 
 
 
