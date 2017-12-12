@@ -1,0 +1,4 @@
+- teste de pot;
+- teste lvl 100 + pot;
+
+- auto ajust sleep;
