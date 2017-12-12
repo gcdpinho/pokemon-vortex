@@ -37,6 +37,7 @@ class User():
 def main():
     url = "https://www.pokemon-vortex.com/"
     driver = webdriver.PhantomJS()
+    typesNull = ["GHOST", "GROUND", "FLYING", "STEEL", "DARK", "NORMAL", "FAIRY"]
     leaders = [("BUG","415355"), ("DARK", "840815"), ("DRAGON", "415125"), ("FIRE", "19935"), ("FIRE", "381236"),
                 ("FLYING", "42587"), ("FLYING", "415267"), ("FLYING", "404027"), ("GHOST", "101386"), ("ELETRIC", "381236"),
                 ("ELETRIC", "301042"), ("FAIRY", "414997"), ("FAIRY", "413288"), ("FIGHTING", "544881"), ("FIGHTING", "889435"),
@@ -50,11 +51,13 @@ def main():
         user = User(driver, url)
     ###### END_LOGIN ######
 
-    training(driver, url, leaders, False)
+    training(driver, url, leaders, False, typesNull)
 
-def training(driver, url, leaders, iteration):
+def training(driver, url, leaders, iteration, typesNull):
     ###### TRAINING ######
     sleep = 3
+    low = 50
+    pot = False
     url = driver.current_url.replace("dashboard/", "")
     repeat = False
     while True:
@@ -76,6 +79,11 @@ def training(driver, url, leaders, iteration):
         driver.get(url + "battle-user/" + natureLeaders[choice][-1])
         # seleciona o ataque do pokemon
         att = selectAttack(driver, url, sleep)
+        # verifica se o elemento do pokemon possui algum ivulnerabilidade
+        for element in typesNull:
+            if nature == element:
+                pot = True
+                break
         # start Battle
         print("start Battle!")
         flag = True
@@ -87,7 +95,7 @@ def training(driver, url, leaders, iteration):
                 # continue ou atack
                 value = element.get_attribute("value")
                 if "select_attack" in value or "attack" in value:
-                    first = battleRound(driver, element, att, first, 50, sleep)
+                    first = battleRound(driver, element, att, first, low, sleep, not pot)
                     flag = True
                     break;
             if not flag:
@@ -133,7 +141,7 @@ def selectAttack(driver, url, sleep):
     
     return int(choice)
 
-def battleRound(driver, element, att, first, low, sleep):
+def battleRound(driver, element, att, first, low, sleep, pot):
     # round de batalha
     value = element.get_attribute("value")
     if "select_attack" in value:
@@ -144,9 +152,10 @@ def battleRound(driver, element, att, first, low, sleep):
             changeAttack(driver, att, sleep)
             first = False
         else:
-            potion = usePotion(driver, low, sleep)
-            if potion:
-                return first
+            if pot:
+                potion = usePotion(driver, low, sleep)
+                if potion:
+                    return first
         print("Attack")
     onClick(element, 1, sleep)
 
@@ -166,7 +175,10 @@ def usePotion(driver, low, sleep):
     
     return False
         
-            
+
+def getLife(driver):
+    return len(driver.find_elements_by_tag_name("strong")[1].text.split(": ")[-1])
+
 def changeAttack(driver, att, sleep):
     # click no ataque escolhido
      onClick(driver.find_element_by_class_name("attackForm").find_elements_by_tag_name("td")[att-1].find_element_by_tag_name("label"), 0, sleep)
