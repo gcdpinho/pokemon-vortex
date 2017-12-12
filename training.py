@@ -144,28 +144,35 @@ def battleRound(driver, element, att, first, low, sleep):
             changeAttack(driver, att, sleep)
             first = False
         else:
-            usePotion(driver, low, sleep)
+            potion = usePotion(driver, low, sleep)
+            if potion:
+                return first
         print("Attack")
     onClick(element, 1, sleep)
 
     return first
 
 def usePotion(driver, low, sleep):
-    # usar pot quando vida menor que low
+    # usar super potion quando vida menor que low
     hp = driver.find_elements_by_tag_name("strong")[1].text.split(": ")[-1]
     if int(hp) <= low:
-        onClick(driver.find_element_by_id("item1"), 0, sleep)
-        bts = driver.finds_element_by_class_name("button-small")
+        onClick(driver.find_elements_by_class_name("item")[1].find_element_by_tag_name("label"), 0, sleep)
+        bts = driver.find_elements_by_class_name("button-small")
         for bt in bts:
             if "Use Item" in bt.get_attribute("value"):
-                print("HP: "+hp+". Use potion!")
                 onClick(bt, 1, sleep)
-                break
+                print("HP: %s. Use Potion! Now: %s" % (hp, driver.find_elements_by_tag_name("strong")[1].text.split(": ")[-1]))
+                return True
+    
+    return False
+        
             
 def changeAttack(driver, att, sleep):
+    # click no ataque escolhido
      onClick(driver.find_element_by_class_name("attackForm").find_elements_by_tag_name("td")[att-1].find_element_by_tag_name("label"), 0, sleep)
 
 def onClick(element, click, sleep):
+    # click + sleep
     if click == 0:
         element.click()
     elif click == 1:
