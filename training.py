@@ -38,32 +38,38 @@ def main():
     url = "https://www.pokemon-vortex.com/"
     driver = webdriver.PhantomJS()
     typesNull = ["GHOST", "GROUND", "FLYING", "STEEL", "DARK", "NORMAL", "FAIRY"]
-    leaders = [("BUG","415355"), ("DARK", "840815"), ("DRAGON", "415125"), ("FIRE", "19935"), ("FIRE", "381236"),
-                ("FLYING", "42587"), ("FLYING", "415267"), ("FLYING", "404027"), ("GHOST", "101386"), ("ELETRIC", "381236"),
-                ("ELETRIC", "301042"), ("FAIRY", "414997"), ("FAIRY", "413288"), ("FIGHTING", "544881"), ("FIGHTING", "889435"),
-                ("GRASS", "502380"), ("GRASS", "381258"), ("GROUND", "112251"), ("GROUND", "413963"), ("ICE", "381236"),
-                ("NORMAL", "140845"), ("NORMAL", "70794"), ("POISON", "405797"), ("POISON", "416906"), ("PSYCHIC", "280993"),
-                ("PSYCHIC", "498104"), ("ROCK", "381236"), ("STEEL", "133733"), ("STEEL", "414302"), ("WATER", "396804"),
-                ("WATER", "315235"), ("WATER", "843606")]
+    leaders = [("BUG","415355"), ("DARK", "840815"), ("DRAGON", "415125"), ("FIRE", "381236"), ("FLYING", "415267"), 
+                ("FLYING", "404027"), ("GHOST", "101386"), ("ELETRIC", "381236"), ("ELETRIC", "301042"), ("FAIRY", "414997"), 
+                ("FAIRY", "413288"), ("FIGHTING", "544881"), ("FIGHTING", "889435"), ("GRASS", "502380"), ("GRASS", "381258"), 
+                ("GROUND", "112251"), ("GROUND", "413963"), ("ICE", "381236"), ("NORMAL", "140845"), ("NORMAL", "70794"), 
+                ("POISON", "405797"), ("POISON", "416906"), ("PSYCHIC", "280993"), ("PSYCHIC", "498104"), ("ROCK", "381236"), 
+                ("STEEL", "133733"), ("STEEL", "414302"), ("WATER", "396804"), ("WATER", "315235"), ("WATER", "843606")]
     ###### LOGIN ######
     user = User(driver, url)
     while not user.login():
         user = User(driver, url)
     ###### END_LOGIN ######
-
+    ###### TRAINING ######
+    # leader = treinadores para cada tipo de pokemon
+    # iteration
+    #   False = até lvl 100
+    #   True = um vez
+    # typesNull = tipos de pokemon imunes a ataques de outros tipos
     training(driver, url, leaders, False, typesNull)
+    ###### END_TRAINING ######
 
 def training(driver, url, leaders, iteration, typesNull):
     ###### TRAINING ######
     sleep = 3
     low = 50
+    lowLevel = 13
     pot = False
     url = driver.current_url.replace("dashboard/", "")
     repeat = False
     while True:
         natureLeaders = []
         nature = input("Tipo do Pókemon: ").upper()
-        
+        # comando para sair
         if nature == "EXIT":
             sys.exit(0)
         # encontra um leader para treinar o tipo do pokemon
@@ -73,6 +79,11 @@ def training(driver, url, leaders, iteration, typesNull):
         # opção inválida
         if len(natureLeaders) == 0:
             print("Opção Inválida! Tente novamente.")
+            continue
+        # permite pokemons com level maior que 13 ou com alguma imunidade
+        level = getLevel(driver, url)
+        if level < lowLevel and nature not in typesNull:
+            print("Seu pókemon não possui level suficiente. Selecione outro pókemon ou treine-o antes.")
             continue
         # escolhe randomicamente um trainer do tipo escolhido
         choice = random.randint(0, len(natureLeaders)-1)
@@ -95,6 +106,7 @@ def training(driver, url, leaders, iteration, typesNull):
                 # continue ou atack
                 value = element.get_attribute("value")
                 if "select_attack" in value or "attack" in value:
+                    # battle round
                     first = battleRound(driver, element, att, first, low, sleep, not pot)
                     flag = True
                     break;
@@ -152,6 +164,7 @@ def battleRound(driver, element, att, first, low, sleep, pot):
             changeAttack(driver, att, sleep)
             first = False
         else:
+            # pota somente se o pokemon toma algum dano
             if pot:
                 potion = usePotion(driver, low, sleep)
                 if potion:
@@ -174,10 +187,15 @@ def usePotion(driver, low, sleep):
                 return True
     
     return False
-        
 
-def getLife(driver):
-    return len(driver.find_elements_by_tag_name("strong")[1].text.split(": ")[-1])
+def getLevel(driver, url):
+    # retorna o level do primeiro pokemon
+    driver.get(url + "/team")
+    level = driver.find_elements_by_class_name("monster-container")[0].find_elements_by_tag_name("p")[0]
+    level = level.text.split(":")[1].split("\n")[0][1:]
+    
+    return int(level)
+
 
 def changeAttack(driver, att, sleep):
     # click no ataque escolhido

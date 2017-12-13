@@ -1,4 +1,3 @@
-- teste de pot;
-- teste lvl 100 + pot;
-
+- verificar morte do pokemon;
+- tratamento: ConnectionResetError;
 - auto ajust sleep;
