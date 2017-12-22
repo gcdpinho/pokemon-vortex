@@ -1,3 +1,4 @@
 - auto training até lvl 13 - pokemons que nao tem imunidade;
 - tratamento: ConnectionResetError;
+- auto evolução
 - auto ajust sleep;
