@@ -1,3 +1,3 @@
-- verificar morte do pokemon;
+- auto training até lvl 13 - pokemons que nao tem imunidade;
 - tratamento: ConnectionResetError;
 - auto ajust sleep;

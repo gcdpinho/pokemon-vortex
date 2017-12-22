@@ -44,6 +44,9 @@ def main():
                 ("GROUND", "112251"), ("GROUND", "413963"), ("ICE", "381236"), ("NORMAL", "140845"), ("NORMAL", "70794"), 
                 ("POISON", "405797"), ("POISON", "416906"), ("PSYCHIC", "280993"), ("PSYCHIC", "498104"), ("ROCK", "381236"), 
                 ("STEEL", "133733"), ("STEEL", "414302"), ("WATER", "396804"), ("WATER", "315235"), ("WATER", "843606")]
+    gyms = [("WATER", "Brock"), ("GRASS", "Brock"), ("BUG", "Gardenia"), ("ELETRIC", "Falkner"), ("FIRE", "Gardenia"), 
+            ("ROCK", "Falkner"), ("PSYCHIC", "Brawly"), ("ICE", "Gardenia"), ("POISON", "Gardenia"), ("DRAGON", ""), 
+            ("FIGHTING", "Brock")]
     ###### LOGIN ######
     user = User(driver, url)
     while not user.login():
@@ -63,6 +66,7 @@ def training(driver, url, leaders, iteration, typesNull):
     sleep = 3
     low = 50
     lowLevel = 13
+    maxLevel = 100
     pot = False
     url = driver.current_url.replace("dashboard/", "")
     repeat = False
@@ -130,16 +134,20 @@ def training(driver, url, leaders, iteration, typesNull):
                         level = driver.find_elements_by_class_name("monster-container")[0].find_elements_by_tag_name("p")[0]
                         level = level.text.split(":")[1].split("\n")[0][1:]
                         decision = "n"
-                        if int(level) < 100:
+                        if int(level) < maxLevel:
                             driver.get(url + "battle-user/" + natureLeaders[choice][-1])
                             flag = True
                         else:
-                            print("Parabéns, você atingiu o level 100!")
+                            print("Parabéns, você atingiu o level %s!" % maxLevel)
                     if decision == "s":
                         # rebattle opponent
                         onClick(driver.find_elements_by_class_name("menu-tab")[0].find_element_by_tag_name("a"), 0, sleep)
                         flag = True
-                    continue           
+                    continue 
+            else:
+                if first == "Death":
+                    print("Seu pokemon morreu! Tente novamente.")
+                    break;          
 
 def selectAttack(driver, url, sleep):
     # permite escolher o ataque do pokemon
@@ -157,6 +165,9 @@ def battleRound(driver, element, att, first, low, sleep, pot):
     # round de batalha
     value = element.get_attribute("value")
     if "select_attack" in value:
+        life = getLife(driver)
+        if life == 0:
+            return "Death"
         print("Continue")
     elif "attack" in value:   
         if first:
@@ -196,6 +207,11 @@ def getLevel(driver, url):
     
     return int(level)
 
+def getLife(driver):
+    life = driver.find_element_by_id("pokeChoose").find_elements_by_tag_name("td")[0].find_element_by_tag_name("p")
+    life = life.text.split("HP: ")[-1]
+
+    return int(life)
 
 def changeAttack(driver, att, sleep):
     # click no ataque escolhido
