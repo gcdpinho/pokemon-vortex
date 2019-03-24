@@ -14,7 +14,7 @@ class User():
         #self.username = input("Usuário: ")
         #self.password = getpass.getpass("Senha: ")
         self.username = "gcdpinho"
-        self.password = "gustavo4878286"
+        self.password = ""
         self.driver = driver
         self.url = url
         
